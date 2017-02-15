@@ -1,17 +1,33 @@
 // tutorial1.js
 // TODO You have to modify the code style from ES5 to ES6 style after the completion of this tutorial.
-var data = [
-  {author: "Pete Hunt", text: "This is one comment"},
-  {author: "Jordan Walke", text: "This is *another* comment"}
-];
-
-
 var CommentBox = React.createClass({
+
+
+  getInitialState: function() {
+  	console.log("getInitialState is called...");
+  	return {data: []}
+  },
+
+  componentDidMount: function() {
+  	console.log("componentDidMount is called...");
+  	$.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+      	this.setState({data: data})
+      }.bind(this),
+      error: function(xhr, status, err) {
+      	console.error(this.props.url, status, err.toString());
+      }.bind(this)
+  	});
+  },
+
   render: function() {
   	return(
       <div className="commentBox">
         <h1>Comments</h1>
-        <CommentList data={this.props.data}/>
+        <CommentList data={this.state.data}/>
         <CommentForm />
       </div>
     );
@@ -61,4 +77,4 @@ var Comment = React.createClass({
 }); 
 
 
-ReactDOM.render(<CommentBox data={data}/>,document.getElementById('content'));
+ReactDOM.render(<CommentBox url="comments.json"/>,document.getElementById('content'));
