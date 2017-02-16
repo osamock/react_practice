@@ -29,6 +29,8 @@ var CommentBox = React.createClass({
         this.setState({data: data});
       }.bind(this),
       error: function(xhr, status, err) {
+        // /api/comments parsererror No conversion from text to postエラーの原因調査
+        console.log("line32 is called...");
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
@@ -79,14 +81,24 @@ var CommentForm = React.createClass({
     // handleSubmitは呼ばれているか？
     console.log("line79: handleSubmit is called...")
     e.preventDefault();
-    React.findDOMNode(this.refs.author).value = '';
-    React.findDOMNode(this.refs.text).value = '';
-    if (!text || !author) {
-      return;
-    }
+    // React.findDOMNodeだとエラーになる。
+    //React.findDOMNode(this.refs.author).value = '';
+    //React.findDOMNode(this.refs.text).value = '';
+    var author = this.refs.author.value;
+    var text = this.refs.text.value;
+    console.log("author:" + author);
+    //if (!text || !author) {
+    //  return;
+    // }
+    console.log("line91 is called...");
+    // /api/comments parsererror No conversion from text to postというエラーが出るので、
+    // onCommentSubmitで指定された関数をデバッグする。
     this.props.onCommentSubmit({author: author, text: text});
-    React.findDOMNode(this.refs.author).value = '';
-    React.findDOMNode(this.refs.text).value = '';
+    // React.findDOMNodeだとエラーになるので、this.refs.author.valueに対して直接空文字を設定する。
+    //React.findDOMNode(this.refs.author).value = '';
+    //React.findDOMNode(this.refs.text).value = '';
+    this.refs.author.value = '';
+    this.refs.text.value = '';
     return;
   },
 
