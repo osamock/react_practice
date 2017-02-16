@@ -22,7 +22,9 @@ var CommentBox = React.createClass({
     // this.setState({data: newComments})
     $.ajax({
       url: this.props.url,
-      dataType: 'POST',
+      // No conversion from text to postのPOSTはdataTypeに指定していたからぽい。
+      dataType: 'json',
+      type: 'POST',
       data: comment,
       success: function(data) {
         console.log("line28: data posted to server.....")
@@ -30,7 +32,14 @@ var CommentBox = React.createClass({
       }.bind(this),
       error: function(xhr, status, err) {
         // /api/comments parsererror No conversion from text to postエラーの原因調査
-        console.log("line32 is called...");
+        // テストした結果は、下のコンソールログが出力されていることを確認した。
+        // api呼び出しをしたけどエラーになった
+
+        /* 2017.02.16
+         api側の問題なのか？それともクライアント側の問題なのかを切り分けるために
+         apiに対してリクエストが届いているかどうかをまず確認すること。
+        */
+        console.log("line40 is called...");
         console.error(this.props.url, status, err.toString());
       }.bind(this)
     });
