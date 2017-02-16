@@ -1,15 +1,8 @@
 // tutorial1.js
 // TODO You have to modify the code style from ES5 to ES6 style after the completion of this tutorial.
 var CommentBox = React.createClass({
-
-
-  getInitialState: function() {
-  	console.log("getInitialState is called...");
-  	return {data: []}
-  },
-
-  componentDidMount: function() {
-  	console.log("componentDidMount is called...");
+  loadCommentsFromServer: function() {
+  	console.log("loadCommentsFromServer is calling...");
   	$.ajax({
       url: this.props.url,
       dataType: 'json',
@@ -18,9 +11,37 @@ var CommentBox = React.createClass({
       	this.setState({data: data})
       }.bind(this),
       error: function(xhr, status, err) {
-      	console.error(this.props.url, status, err.toString());
+      	console.error("line14..." + this.props.url, status, err.toString());
+        xhr.abort();
       }.bind(this)
   	});
+  },
+  handleCommentSubmit: function(comment) {
+    // var comments = this.state.data;
+    // var newComments = comments.concat(comment);
+    // this.setState({data: newComments})
+    $.ajax({
+      url: this.props.url,
+      dataType: 'POST',
+      data: comment,
+      success: function(data) {
+        console.log("line28: data posted to server.....")
+        this.setState({data: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+  getInitialState: function() {
+  	console.log("getInitialState is called...");
+  	return {data: []}
+  },
+
+  componentDidMount: function() {
+  	console.log("componentDidMount is called...");
+  	this.loadCommentsFromServer();
+  	setInterval(this.loadCommentsFromServer, this.props.pollInterval);
   },
 
   render: function() {
@@ -28,7 +49,7 @@ var CommentBox = React.createClass({
       <div className="commentBox">
         <h1>Comments</h1>
         <CommentList data={this.state.data}/>
-        <CommentForm />
+        <CommentForm onCommentSubmit={this.handleCommentSubmit}/>
       </div>
     );
   }
@@ -53,13 +74,31 @@ var CommentList = React.createClass({
 });
 
 var CommentForm = React.createClass({
+  
+  handleSubmit: function(e) {
+    // handleSubmitは呼ばれているか？
+    console.log("line79: handleSubmit is called...")
+    e.preventDefault();
+    React.findDOMNode(this.refs.author).value = '';
+    React.findDOMNode(this.refs.text).value = '';
+    if (!text || !author) {
+      return;
+    }
+    this.props.onCommentSubmit({author: author, text: text});
+    React.findDOMNode(this.refs.author).value = '';
+    React.findDOMNode(this.refs.text).value = '';
+    return;
+  },
+
 	render: function() {
-		return(
-		  <div className="commentForm">
-            Hello, world! I am a CommentForm.
-		  </div>
-		);
-	}
+		return (
+    <form className="commentForm" onSubmit={this.handleSubmit}>
+      <input type="text" placeholder="Your name" ref="author"/>
+      <input type="text" placeholder="Say something..." ref="text"/>
+      <input type="submit" value="Post" />
+    </form>
+    );
+  }
 });
 
 var Comment = React.createClass({
@@ -77,4 +116,4 @@ var Comment = React.createClass({
 }); 
 
 
-ReactDOM.render(<CommentBox url="comments.json"/>,document.getElementById('content'));
+ReactDOM.render(<CommentBox url="/api/comments" pollInterval={2000} />,document.getElementById('content'));
